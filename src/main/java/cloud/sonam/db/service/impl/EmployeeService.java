@@ -46,7 +46,7 @@ public class EmployeeService implements EmployeeManage {
 
     @Override
     public Mono<Employee> getById(long id) {
-        return null;
+        return employeeRepository.findById(id);
     }
 
     @Override

@@ -7,6 +7,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @author Oliver Gierke
  * @author Mark Paluch
  */
-@SpringBootApplication
-@EnableTransactionManagement
+//@SpringBootApplication
+//@EnableTransactionManagement
 public class InfrastructureConfiguration {}

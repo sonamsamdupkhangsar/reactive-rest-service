@@ -45,8 +45,11 @@ public class ReactiveRestServiceApplication {
 		initializer.setConnectionFactory(connectionFactory);
 		initializer.setDatabasePopulator(new ResourceDatabasePopulator(new ByteArrayResource(("CREATE SEQUENCE primary_key;"
 				+ "DROP TABLE IF EXISTS customer;"
-				+ "CREATE TABLE customer (id INT PRIMARY KEY, firstname VARCHAR(100) NOT NULL, lastname VARCHAR(100) NOT NULL);")
+				+ "CREATE TABLE customer (id INT PRIMARY KEY, firstname VARCHAR(100) NOT NULL, lastname VARCHAR(100) NOT NULL);"
+				+ "DROP TABLE IF EXISTS employee;"
+				+ "CREATE TABLE employee (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL);")
 				.getBytes())));
+
 
 		return initializer;
 	}
