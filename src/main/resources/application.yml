@@ -1,0 +1,25 @@
+logging:
+  level:
+    root: error
+    cloud:
+      sonam: debug
+info:
+  app:
+    name: Springboot Application
+    description: This is a Springboot application
+    version: 1.0.0
+
+management:
+  endpoint:
+    health:
+      show-details: always
+#spring:
+#  webflux:
+#    static-path-pattern: file:/Users/ssamdupk/Documents/bitbucket/reactive-rest-service/videofiles
+#  resources.static-locations: file:/Users/ssamdupk/Documents/bitbucket/reactive-rest-service/videofiles
+
+server:
+#  port: 8080
+  port: 9001
+trustOrigin: http://localhost:8080
+
