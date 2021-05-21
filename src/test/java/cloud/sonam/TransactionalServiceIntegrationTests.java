@@ -2,7 +2,7 @@ package cloud.sonam;
 
 import cloud.sonam.db.entity.Customer;
 import cloud.sonam.db.repo.CustomerRepository;
-import cloud.sonam.db.service.TransactionalService;
+import cloud.sonam.service.TransactionalService;
 import reactor.core.publisher.Hooks;
 import reactor.test.StepVerifier;
 

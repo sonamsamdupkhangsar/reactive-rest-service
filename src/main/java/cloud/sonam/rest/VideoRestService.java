@@ -1,7 +1,7 @@
 package cloud.sonam.rest;
 
 import cloud.sonam.db.entity.Video;
-import cloud.sonam.db.service.VideoServiceInterface;
+import cloud.sonam.service.VideoServiceInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package cloud.sonam.rest;
 
 import cloud.sonam.db.entity.Employee;
-import cloud.sonam.db.service.impl.EmployeeService;
+import cloud.sonam.service.impl.EmployeeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

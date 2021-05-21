@@ -2,7 +2,7 @@ package cloud.sonam.service;
 
 import cloud.sonam.InfrastructureConfiguration;
 import cloud.sonam.db.entity.Employee;
-import cloud.sonam.db.service.impl.EmployeeService;
+import cloud.sonam.service.impl.EmployeeService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

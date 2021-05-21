@@ -66,7 +66,7 @@ public class ReactiveRestServiceApplication {
 				+ "DROP TABLE IF EXISTS employee;"
 				+ "CREATE TABLE employee (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL);"
 				+ "DROP TABLE IF EXISTS video;"
-				+ "CREATE TABLE video ( id SERIAL PRIMARY KEY, path VARCHAR(255) NOT NULL, stored datetime NOT NULL);"
+				+ "CREATE TABLE video ( id SERIAL PRIMARY KEY, name varchar(255),  thumb varchar(255), path VARCHAR(255) NOT NULL, stored datetime NOT NULL);"
 		)
 				.getBytes())));
 

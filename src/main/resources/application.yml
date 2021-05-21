@@ -23,3 +23,7 @@ server:
   port: 9001
 trustOrigin: http://localhost:8080
 
+
+spring:
+  codec:
+    max-in-memory-size: 10MB
