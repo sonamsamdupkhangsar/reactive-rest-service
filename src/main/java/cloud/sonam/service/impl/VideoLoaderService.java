@@ -2,6 +2,7 @@ package cloud.sonam.service.impl;
 
 import cloud.sonam.db.entity.Video;
 import cloud.sonam.db.repo.VideoRepository;
+import cloud.sonam.img.SpacesProfilePhotoSaver;
 import cloud.sonam.service.VideoServiceInterface;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.codec.multipart.FilePart;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -19,9 +21,8 @@ import reactor.core.publisher.Mono;
 import javax.annotation.PostConstruct;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.function.Function;
@@ -39,6 +40,11 @@ public class VideoLoaderService implements VideoServiceInterface {
     @Value("file:/Users/ssamdupk/Documents/bitbucket/reactive-rest-service/videofiles")
     private Resource resource;
 
+    @Value("${videoPath}")
+    private String videoPath;
+
+    @Value("${thumbnailPath}")
+
     private String video = "video";
     private String thumbnail = "thumbnail";
     private String gif = "gif";
@@ -48,6 +54,9 @@ public class VideoLoaderService implements VideoServiceInterface {
     private File gifFolder;
 
     private File folder;
+
+    @Autowired
+    private SpacesProfilePhotoSaver spacesProfilePhotoSaver;
 
     @PostConstruct
     public void createFolder() throws IOException {
@@ -82,12 +91,36 @@ public class VideoLoaderService implements VideoServiceInterface {
                     if (fp.filename().contains(".")) {
                         extension = fp.filename().substring(fp.filename().lastIndexOf(".") + 1);
                     }
+                    fp.content().map(dataBuffer -> {
+                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(bytes);
+                        DataBufferUtils.release(dataBuffer);
+                        return bytes;
+                    }).map(bytes -> {
+                        saveBytes(bytes, fp.filename(), "video/mp4");
+                        createVideo(uuid, new ByteArrayInputStream(bytes));
+                    }).map(key -> {
+                        LOG.info("key name: {}", key);
+
+                    });
+
                     java.io.File file = new java.io.File(videoFolder, uuid.toString() + "_" + extension);
 
                     return fp.transferTo(file)
                             .doOnSuccess(file2 -> createVideo(uuid, file))
                             .thenReturn(uuid.toString());
                 });
+    }
+
+    //"video/mp4"
+    private String saveBytes(byte[] bytes, String name, String format) {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String extension = "";
+        if (name.contains(".")) {
+            extension = name.substring(name.lastIndexOf(".") + 1);
+        }
+        String key = spacesProfilePhotoSaver.save(bytes, format, localDateTime+extension);
+        return key;
     }
 
     /*                   LOG.info("creating animated gif from video");
@@ -101,12 +134,11 @@ public class VideoLoaderService implements VideoServiceInterface {
 
 
 
-    public static void createTnForVideo(File inFile, File outFile, String imageFormat) {
+    public ByteArrayOutputStream createTnForVideo(InputStream inputStream, String imageFormat) {
         try {
-            LOG.info("videoFile: {}\n, thumbnail path: {}\n, imageFormat: {}",
-                    inFile.getAbsolutePath(), outFile.getAbsolutePath(), imageFormat);
+            LOG.info("imageFormat: {}", imageFormat);
 
-            FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(inFile);
+            FFmpegFrameGrabber frameGrabber = new FFmpegFrameGrabber(inputStream);
             frameGrabber.start();
             Java2DFrameConverter fc = new Java2DFrameConverter();
             Frame frame = frameGrabber.grabKeyFrame();
@@ -117,12 +149,14 @@ public class VideoLoaderService implements VideoServiceInterface {
 
             int i = 0;
             while (bufferedImage != null) {
-                ImageIO.write(bufferedImage, imageFormat, outFile);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, imageFormat, baos);
 
                 frame = frameGrabber.grabKeyFrame();
                 bufferedImage = fc.convert(frame);
                 LOG.info("i: {}", i++);
-                break;
+                return baos;
+
             }
             frameGrabber.stop();
             frameGrabber.close();
@@ -130,6 +164,8 @@ public class VideoLoaderService implements VideoServiceInterface {
         } catch (Exception e) {
             LOG.error("failed to create thumbnail for video", e);
         }
+        return null;
+
     }
 
 
@@ -208,17 +244,39 @@ public class VideoLoaderService implements VideoServiceInterface {
 
 
     }
-
-    private Mono<Video> createVideo(UUID uuid, File file) {
-        LOG.info("file has been transferred: {}", file);
+    private Mono<Video> createVideo(UUID uuid, InputStream inputStream, String fileName) {
+        LOG.info("file has been transferred: {}", inputStream);
 
         var thumbnailFile = new File(thumbnailFolder, uuid.toString() + ".png");
         //File file = new File(videoFolder, fileName);
 
-        VideoLoaderService.createTnForVideo(file, thumbnailFile, "png");
+        VideoLoaderService.createTnForVideo(inputStream, thumbnailFile, "png");
         final String thumbnailPath = "thumbnail/"+thumbnailFile.getName();
 
         Video video = new Video(uuid.toString(), "video/"+file.getName(), thumbnailPath);
+
+        Mono<Video> videoMono = videoRepository.save(video);
+        videoMono.doOnNext(video1 ->
+        {
+            LOG.info("video1 is {}",video1);
+        }).subscribe();
+
+        LOG.info("saved video: {}", videoMono);
+
+        return videoMono;
+    }
+
+    private Mono<Video> createVideo(UUID uuid, InputStream inputStream, String fileName) {
+        LOG.info("file has been transferred: {}");
+
+        var thumbnailFile = new File(thumbnailFolder, uuid.toString() + ".png");
+        //File file = new File(videoFolder, fileName);
+
+        ByteArrayOutputStream baos = createTnForVideo(inputStream, "png");
+        String pathKey = saveBytes(baos.toByteArray(), fileName, "video/mp4");
+        //final String thumbnailPath = "thumbnail/"+thumbnailFile.getName();
+
+        Video video = new Video(uuid.toString(), f, thumbnailPath);
 
         Mono<Video> videoMono = videoRepository.save(video);
         videoMono.doOnNext(video1 ->
