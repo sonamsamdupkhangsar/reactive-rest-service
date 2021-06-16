@@ -26,4 +26,23 @@ trustOrigin: http://localhost:8080
 
 spring:
   codec:
-    max-in-memory-size: 10MB
+    max-in-memory-size: 100MB
+
+aws:
+  s3:
+    region:
+    accessKeyId:
+    secretAccessKey:
+    bucket:
+    endpoint: https://sfo2.digitaloceanspaces.com
+    subdomain:
+    videoPath: videoapp/1/
+
+#spaceBucketRegion: sfo2
+videoPath: videoapp/1/
+bucket: sonam
+
+spaceAccessKey:
+spaceSecretKey:
+imageAclHeader: x-amz-acl
+imageAclValue: public-read

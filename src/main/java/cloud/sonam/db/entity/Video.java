@@ -29,6 +29,10 @@ public class Video {
         this.thumb = thumb;
     }
 
+    public Long getId() {
+        return id;
+    }
+
     public String getPath() {
         return path;
     }
